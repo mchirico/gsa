@@ -61,6 +61,13 @@ var _ = Describe("Gsess", func() {
 				err = gsa.CreateBucket(bucketName)
 				Expect(err).To(BeNil())
 
+				item := "some/path/down"
+				_, err = gsa.PutItem(bucketName, item, "data string")
+				Expect(err).To(BeNil())
+
+				err = gsa.DeleteItem(bucketName, item)
+				Expect(err).To(BeNil())
+
 				err = gsa.DeleteBucket(bucketName)
 				Expect(err).To(BeNil())
 

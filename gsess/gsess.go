@@ -67,7 +67,6 @@ func (gsa *GSA) DeleteBucket(bucket string) error {
 
 	_, err := svc.DeleteBucket(&s3.DeleteBucketInput{
 		Bucket: aws.String(bucket),
-		
 	})
 	if err != nil {
 		return err
@@ -138,6 +137,28 @@ func (gsa *GSA) PutItem(bucket string, item string, data string) (string, error)
 	fmt.Println(defClient, err)
 
 	return url, nil
+}
+
+func (gsa *GSA) DeleteItem(bucket string, item string) error {
+
+	sess := gsa.Sess
+	svc := s3.New(sess)
+
+	_, err := svc.DeleteObject(&s3.DeleteObjectInput{Bucket: aws.String(bucket), Key: aws.String(item)})
+	if err != nil {
+		return err
+	}
+
+	err = svc.WaitUntilObjectNotExists(&s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(item),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 func (gsa *GSA) CreateSQS(qName string) (string, error) {
