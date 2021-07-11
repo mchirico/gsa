@@ -17,15 +17,18 @@ var _ = Describe("Gsess", func() {
 
 	})
 
-	Describe("Add function", func() {
+	Describe("Put/Get Bucket Item", func() {
 
-		Context("Adding fist and second", func() {
-			It("should be equal to expected", func() {
-				err := gsa.PutItem("cwxstat-test", "test/testItem", "Test data")
+		Context("Put item", func() {
+			It("should get", func() {
+
+                data := "Test data"
+
+				err := gsa.PutItem("cwxstat-test", "test/testItem", data)
 				Expect(err).To(BeNil())
 
 				_,s, _ := gsa.GetItem("cwxstat-test", "test/testItem")
-				Expect(s).To(BeEquivalentTo("Test data"))
+				Expect(s).To(BeEquivalentTo(data))
 
 
 			})
