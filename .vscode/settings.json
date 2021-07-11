@@ -1,0 +1,46 @@
+{
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": ["--fast"],
+    "go.lintOnSave": "package",
+    "go.coverageDecorator": {
+        "coveredGutterStyle": "blockgreen",
+        "type": "gutter",
+        "uncoveredGutterStyle": "blockred"
+    },
+    "gopls": {
+        "formatting.gofumpt": true,
+        "ui.completion.usePlaceholders": true,
+        "ui.diagnostic.analyses": {
+          "fieldalignment": true,
+          "shadow": true,
+          "unusedparams": true
+        }
+    },
+    "go.editorContextMenuCommands": {
+        "toggleTestFile": true,
+        "addTags": true,
+        "removeTags": false,
+        "fillStruct": false,
+        "testAtCursor": true,
+        "testFile": false,
+        "testPackage": false,
+        "generateTestForFunction": true,
+        "generateTestForFile": false,
+        "generateTestForPackage": false,
+        "addImport": true,
+        "testCoverage": true,
+        "playground": true,
+        "debugTestAtCursor": true,
+        "benchmarkAtCursor": false,
+
+    },
+    "go.coverOnSave": true,
+    
+    "files.autoSave": "afterDelay",
+    "workbench.colorCustomizations": {
+        "editor.rangeHighlightBackground": "#00AA00",
+        "editorError.background": "#ff0000",
+        "editorError.foreground": "#130303"
+
+    }
+}
