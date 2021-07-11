@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/mchirico/gsa/gsess"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/mchirico/gsa/gsess"
 )
 
 var _ = Describe("Gsess", func() {
@@ -42,8 +42,6 @@ var _ = Describe("Gsess", func() {
 
 	})
 
-
-
 	Describe("Create/Delete Bucket", func() {
 
 		Context("Create Bucket", func() {
@@ -60,10 +58,8 @@ var _ = Describe("Gsess", func() {
 					}
 				}
 
-				
 				err = gsa.CreateBucket(bucketName)
 				Expect(err).To(BeNil())
-
 
 				err = gsa.DeleteBucket(bucketName)
 				Expect(err).To(BeNil())
@@ -72,11 +68,9 @@ var _ = Describe("Gsess", func() {
 				err = gsa.CreateBucket(bucketName)
 				Expect(err).To(BeNil())
 
-
 			})
 		})
 
 	})
-
 
 })

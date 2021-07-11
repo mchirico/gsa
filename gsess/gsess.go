@@ -5,9 +5,12 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go/service/sqs"
+
 	"net/http"
 	"strings"
 	"time"
@@ -17,7 +20,6 @@ type GSA struct {
 	Sess   *session.Session
 	expire time.Duration
 }
-
 
 func NewAWS() *GSA {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
@@ -135,4 +137,122 @@ func (gsa *GSA) PutItem(bucket string, item string, data string) (string, error)
 	fmt.Println(defClient, err)
 
 	return url, nil
+}
+
+func (gsa *GSA) CreateSQS(qName string) (string, error) {
+
+	sess := gsa.Sess
+	svc := sqs.New(sess)
+
+	result, err := svc.CreateQueue(&sqs.CreateQueueInput{
+		QueueName: aws.String(qName),
+		Attributes: aws.StringMap(map[string]string{
+			"ReceiveMessageWaitTimeSeconds": "20",
+		}),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return aws.StringValue(result.QueueUrl), nil
+}
+
+func (gsa *GSA) SendSQS(qName string, delay int64, msgAttrib map[string]*sqs.MessageAttributeValue, msgBody string) (string, error) {
+
+	sess := gsa.Sess
+	svc := sqs.New(sess)
+
+	resultURL, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
+		QueueName: &qName,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	result, err := svc.SendMessage(&sqs.SendMessageInput{
+		DelaySeconds:      aws.Int64(delay),
+		MessageAttributes: msgAttrib,
+		MessageBody:       aws.String(msgBody),
+		QueueUrl:          resultURL.QueueUrl,
+	})
+
+	return *result.MessageId, err
+
+}
+
+func (gsa *GSA) ReceiveSQS(qName string) error {
+
+	var timeoutPtr int64
+
+	timeoutPtr = 30
+
+	sess := gsa.Sess
+	svc := sqs.New(sess)
+
+	resultURL, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
+		QueueName: &qName,
+	})
+
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == sqs.ErrCodeQueueDoesNotExist {
+			fmt.Errorf("Unable to find queue %q.", qName)
+		}
+		return err
+	}
+
+	result, err := svc.ReceiveMessage(&sqs.ReceiveMessageInput{
+		QueueUrl: resultURL.QueueUrl,
+		AttributeNames: aws.StringSlice([]string{
+			"SentTimestamp",
+		}),
+		MaxNumberOfMessages: aws.Int64(1),
+		MessageAttributeNames: aws.StringSlice([]string{
+			"All",
+		}),
+		WaitTimeSeconds: &timeoutPtr,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Received %d messages.\n", len(result.Messages))
+	if len(result.Messages) > 0 {
+
+		MsgTakeApart(result.Messages)
+
+		resultDelete, err := svc.DeleteMessage(&sqs.DeleteMessageInput{
+			QueueUrl:      resultURL.QueueUrl,
+			ReceiptHandle: result.Messages[0].ReceiptHandle,
+		})
+
+		if err != nil {
+			fmt.Println("Delete Error", err)
+			return err
+		}
+
+		fmt.Println("Message Deleted", resultDelete)
+	}
+
+	return nil
+}
+
+func MsgTakeApart(messages []*sqs.Message) (string, string, map[string]string) {
+
+	msgBody := ""
+	msgStr := ""
+	m := map[string]string{}
+
+	for _, msg := range messages {
+		msgBody = *msg.Body
+		msgStr = msg.String()
+		fmt.Printf("body: %s\n", *msg.Body)
+		fmt.Printf("msg str: %v\n", msg.String())
+		for k, v := range msg.MessageAttributes {
+			fmt.Printf("key: %s  value: %v\n", k, *v.StringValue)
+			m[k] = *v.StringValue
+		}
+	}
+	return msgBody, msgStr, m
 }
