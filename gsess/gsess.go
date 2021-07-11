@@ -18,6 +18,7 @@ type GSA struct {
 	expire time.Duration
 }
 
+
 func NewAWS() *GSA {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
