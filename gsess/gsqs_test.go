@@ -44,7 +44,7 @@ var _ = Describe("SQS", func() {
 			})
 		})
 
-		Context("Send Msg", func() {
+		Context("Send Msg and Receive", func() {
 			It("should return url", func() {
 
 				messageID, err := gsa.SendSQS(qName, 0, msgAttrib, msgBody)
