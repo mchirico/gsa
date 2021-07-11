@@ -24,7 +24,7 @@ var _ = Describe("Gsess", func() {
 
                 data := "Test data"
 
-				err := gsa.PutItem("cwxstat-test", "test/testItem", data)
+				_, err := gsa.PutItem("cwxstat-test", "test/testItem", data)
 				Expect(err).To(BeNil())
 
 				_,s, _ := gsa.GetItem("cwxstat-test", "test/testItem")
