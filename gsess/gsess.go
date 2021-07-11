@@ -67,6 +67,7 @@ func (gsa *GSA) DeleteBucket(bucket string) error {
 
 	_, err := svc.DeleteBucket(&s3.DeleteBucketInput{
 		Bucket: aws.String(bucket),
+		
 	})
 	if err != nil {
 		return err
