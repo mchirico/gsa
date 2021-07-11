@@ -181,11 +181,11 @@ func (gsa *GSA) SendSQS(qName string, delay int64, msgAttrib map[string]*sqs.Mes
 
 }
 
-func (gsa *GSA) ReceiveSQS(qName string) error {
+func (gsa *GSA) ReceiveSQS(qName string) (string, string, map[string]string, error) {
 
-	var timeoutPtr int64
-
-	timeoutPtr = 30
+	msgBody := ""
+	msgStr := ""
+	m := map[string]string{}
 
 	sess := gsa.Sess
 	svc := sqs.New(sess)
@@ -198,7 +198,7 @@ func (gsa *GSA) ReceiveSQS(qName string) error {
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == sqs.ErrCodeQueueDoesNotExist {
 			fmt.Errorf("Unable to find queue %q.", qName)
 		}
-		return err
+		return "", "", nil, err
 	}
 
 	result, err := svc.ReceiveMessage(&sqs.ReceiveMessageInput{
@@ -210,17 +210,17 @@ func (gsa *GSA) ReceiveSQS(qName string) error {
 		MessageAttributeNames: aws.StringSlice([]string{
 			"All",
 		}),
-		WaitTimeSeconds: &timeoutPtr,
+		WaitTimeSeconds: aws.Int64(20),
 	})
 
 	if err != nil {
-		return err
+		return "", "", nil, err
 	}
 
 	fmt.Printf("Received %d messages.\n", len(result.Messages))
 	if len(result.Messages) > 0 {
 
-		MsgTakeApart(result.Messages)
+		msgBody, msgStr, m = MsgTakeApart(result.Messages)
 
 		resultDelete, err := svc.DeleteMessage(&sqs.DeleteMessageInput{
 			QueueUrl:      resultURL.QueueUrl,
@@ -229,13 +229,13 @@ func (gsa *GSA) ReceiveSQS(qName string) error {
 
 		if err != nil {
 			fmt.Println("Delete Error", err)
-			return err
+			return "", "", nil, err
 		}
 
 		fmt.Println("Message Deleted", resultDelete)
 	}
 
-	return nil
+	return msgBody, msgStr, m, nil
 }
 
 func MsgTakeApart(messages []*sqs.Message) (string, string, map[string]string) {

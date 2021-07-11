@@ -4,10 +4,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/mchirico/gsa/gsess"
+
+	"fmt"
 )
 
 var _ = Describe("SQS", func() {
@@ -50,8 +51,10 @@ var _ = Describe("SQS", func() {
 				Expect(err).To(BeNil())
 				Expect(messageID).To(ContainSubstring("-"))
 
-				err = gsa.ReceiveSQS(qName)
+				rmsgBody, rmsgStr, m, err := gsa.ReceiveSQS(qName)
 				Expect(err).To(BeNil())
+
+				fmt.Printf("%v, %v, %v\n", rmsgBody, rmsgStr, m)
 
 			})
 		})
