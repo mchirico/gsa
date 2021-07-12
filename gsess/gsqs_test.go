@@ -55,6 +55,7 @@ var _ = Describe("SQS", func() {
 				Expect(err).To(BeNil())
 
 				fmt.Printf("%v, %v, %v\n", rmsgBody, rmsgStr, m)
+				Expect(rmsgBody).To(ContainSubstring(msgBody))
 
 			})
 		})
