@@ -35,6 +35,7 @@ var _ = Describe("SQS", func() {
 
 	Describe("SQS", func() {
 
+
 		Context("Create Q", func() {
 			It("should return url", func() {
 				url, err := gsa.CreateSQS(qName)
