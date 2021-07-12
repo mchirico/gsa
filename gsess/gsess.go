@@ -281,7 +281,7 @@ func MsgTakeApart(messages []*sqs.Message) (string, string, map[string]string) {
 	return msgBody, msgStr, m
 }
 
-func (gsa *GSA) CreateInstance() error {
+func (gsa *GSA) CreateInstance(keyName string) error {
 
 	sess := gsa.Sess
 
@@ -295,6 +295,7 @@ func (gsa *GSA) CreateInstance() error {
 		InstanceType: aws.String("t2.micro"),
 		MinCount:     aws.Int64(1),
 		MaxCount:     aws.Int64(1),
+		KeyName: &keyName,
 	})
 
 	if err != nil {
@@ -309,8 +310,8 @@ func (gsa *GSA) CreateInstance() error {
 		Resources: []*string{runResult.Instances[0].InstanceId},
 		Tags: []*ec2.Tag{
 			{
-				Key:   aws.String("Name"),
-				Value: aws.String("MyFirstInstance"),
+				Key:   aws.String("GSAinstance"),
+				Value: aws.String("gsa"),
 			},
 		},
 	})
